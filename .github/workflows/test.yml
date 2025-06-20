@@ -55,32 +55,23 @@ jobs:
     - name: Wait for PostgreSQL
       run: |
         echo "Waiting for PostgreSQL to start..."
-        # Ensure you are using the 'postgres' user here, as defined in services
-        until pg_isready -h localhost -p 5432 -U postgres; do # This was the previous fix for "role root does not exist"
+        until pg_isready -h localhost -p 5432 -U postgres; do
           sleep 1
         done
         echo "PostgreSQL is up and running!"
 
-    # --- THIS IS THE CRUCIAL NEW/FIXED STEP ---
-    - name: Start Application Server
+    - name: Start Application
       run: |
-        echo "Starting the application server..."
-        # This command assumes your main application entry point is 'main.py'
-        # and it runs with uvicorn serving an 'app' object.
-        # Adjust 'main:app' if your entry point or app instance name is different.
-        # The '&' runs the command in the background.
-        uvicorn app.main:app --host 0.0.0.0 --port 8000 &
-        # Give the server a few seconds to start up and bind to the port
+
+        uvicorn main:app --host 0.0.0.0 --port 8000 &
         sleep 5
-        echo "Application server started."
       env:
-        # Ensure your application has access to the DATABASE_URL
+
         DATABASE_URL: postgresql://postgres:19951230@localhost:5432/parcial_test
 
     - name: Run all tests
       env:
         DATABASE_URL: postgresql://postgres:19951230@localhost:5432/parcial_test
-        # Ensure chromedriver path is still correct if needed, but selenium should find it
         PATH: ${{ github.action_path }}/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/lib/chromium-browser/chromedriver 
       run: |
         pytest tests/
