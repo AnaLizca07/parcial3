@@ -4,6 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 import time
 from app.database import SessionLocal
 from app.models import Producto, Categoria, Movimientos
@@ -14,8 +16,17 @@ from app import models
 class TestInventorySystem:
     @pytest.fixture(scope="function")
     def driver(self):
-        driver = webdriver.Chrome()
-        driver.implicitly_wait(10)
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        
+        chrome_options.binary_location = "/usr/bin/chromium-browser"
+
+        service = Service(executable_path="/usr/bin/chromedriver") 
+        
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        
         yield driver
         driver.quit()
 
