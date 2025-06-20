@@ -18,7 +18,7 @@ jobs:
         image: postgres:15.6 
         env:
           POSTGRES_DB: parcial_test
-          POSTGRES_USER: tpostgres
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: 19951230
         ports:
           - 5432:5432
@@ -51,7 +51,7 @@ jobs:
     - name: Wait for PostgreSQL
       run: |
 
-        until pg_isready -h localhost -p 5432 -U test_user; do
+        until pg_isready -h localhost -p 5432 -U postgres; do
           sleep 1
         done
         echo "PostgreSQL is up and running!"
@@ -59,7 +59,7 @@ jobs:
 
     - name: Run all tests
       env:
-        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+        DATABASE_URL: postgresql://postgres:19951230@localhost:5432/parcial_test
       run: |
         pytest tests/
 
