@@ -13,9 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-
       postgres:
-        image: postgres:15.6 
+        image: postgres:15.6
         env:
           POSTGRES_DB: parcial_test
           POSTGRES_USER: postgres
@@ -32,7 +31,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Python 3.11.13 
+    - name: Set up Python 3.11.13
       uses: actions/setup-python@v4
       with:
         python-version: 3.11.13
@@ -48,18 +47,25 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    # --- NEW: Install Chrome/Chromium for Selenium ---
+    - name: Install Chromium
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y chromium-browser chromium-chromedriver
+
     - name: Wait for PostgreSQL
       run: |
-
-        until pg_isready -h localhost -p 5432 -U postgres; do
+        echo "Waiting for PostgreSQL to start..."
+        until pg_isready -h localhost -p 5432 -U test_user; do
           sleep 1
         done
         echo "PostgreSQL is up and running!"
 
-
     - name: Run all tests
       env:
         DATABASE_URL: postgresql://postgres:19951230@localhost:5432/parcial_test
+
+        PATH: ${{ github.action_path }}/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/lib/chromium-browser/chromedriver 
       run: |
         pytest tests/
 
