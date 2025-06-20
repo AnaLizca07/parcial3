@@ -12,14 +12,30 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      # Define a PostgreSQL service
+      postgres:
+        image: postgres:15.6 # Use a stable PostgreSQL version
+        env:
+          POSTGRES_DB: test_db # Or your actual database name for testing
+          POSTGRES_USER: test_user # Your test database user
+          POSTGRES_PASSWORD: test_password # Your test database password
+        ports:
+          - 5432:5432 # Map the container port to the host port
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Python 3.11
+    - name: Set up Python 3.11.13 # Keep 3.11.13 as per your log, or adjust as needed for pydantic
       uses: actions/setup-python@v4
       with:
-        python-version: 3.11
+        python-version: 3.11.13
 
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
@@ -32,7 +48,19 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    # Add a step to wait for the PostgreSQL service to be ready
+    - name: Wait for PostgreSQL
+      run: |
+
+        until pg_isready -h localhost -p 5432 -U test_user; do
+          sleep 1
+        done
+        echo "PostgreSQL is up and running!"
+
+
     - name: Run all tests
+      env:
+        DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
       run: |
         pytest tests/
 
