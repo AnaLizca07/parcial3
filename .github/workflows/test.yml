@@ -21,22 +21,21 @@ jobs:
       with:
         python-version: 3.13.5
 
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run unit tests
+    - name: Run all tests
       run: |
-        pytest tests/test_unit.py
+        pytest tests/
 
-    - name: Run integration tests
-      run: |
-        pytest tests/test_integration.py
-
-    - name: Run selenium tests
-      run: |
-        pytest tests/test_selenium.py
     - name: 6. Success Message
       if: success()
       run: |
